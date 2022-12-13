@@ -149,6 +149,7 @@ public class IdleNotifierPlugin extends Plugin
 			case WOODCUTTING_3A_AXE:
 			case WOODCUTTING_CRYSTAL:
 			case WOODCUTTING_TRAILBLAZER:
+			case BLISTERWOOD_JUMP_SCARE:
 			/* Cooking(Fire, Range) */
 			case COOKING_FIRE:
 			case COOKING_RANGE:
@@ -603,7 +604,7 @@ public class IdleNotifierPlugin extends Plugin
 			return false;
 		}
 
-		if (client.getEnergy() <= config.getLowEnergyThreshold())
+		if (client.getEnergy() / 100 <= config.getLowEnergyThreshold())
 		{
 			if (shouldNotifyLowEnergy)
 			{
@@ -626,7 +627,7 @@ public class IdleNotifierPlugin extends Plugin
 			return false;
 		}
 
-		if (client.getEnergy() >= config.getHighEnergyThreshold())
+		if (client.getEnergy() / 100 >= config.getHighEnergyThreshold())
 		{
 			if (shouldNotifyHighEnergy)
 			{
