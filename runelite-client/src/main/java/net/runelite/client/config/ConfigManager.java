@@ -81,6 +81,7 @@ import net.runelite.client.events.RuneScapeProfileChanged;
 import net.runelite.client.events.SessionClose;
 import net.runelite.client.events.SessionOpen;
 import net.runelite.client.util.ColorUtil;
+import net.runelite.client.util.RunnableExceptionLogger;
 import net.runelite.http.api.config.ConfigPatch;
 import net.runelite.http.api.config.ConfigPatchResult;
 import net.runelite.http.api.config.Configuration;
@@ -103,7 +104,6 @@ public class ConfigManager
 	private static final int KEY_SPLITTER_PROFILE = 1;
 	private static final int KEY_SPLITTER_KEY = 2;
 
-	private final File configFile;
 	@Nullable
 	private final String configProfileName;
 	private final EventBus eventBus;
@@ -129,7 +129,6 @@ public class ConfigManager
 
 	@Inject
 	private ConfigManager(
-		@Named("config") File config,
 		@Nullable @Named("profile") String profile,
 		ScheduledExecutorService scheduledExecutorService,
 		EventBus eventBus,
@@ -140,7 +139,6 @@ public class ConfigManager
 		SessionManager sessionManager
 	)
 	{
-		this.configFile = config;
 		this.configProfileName = profile;
 		this.eventBus = eventBus;
 		this.client = client;
@@ -149,7 +147,7 @@ public class ConfigManager
 		this.profileManager = profileManager;
 		this.sessionManager = sessionManager;
 
-		scheduledExecutorService.scheduleWithFixedDelay(this::sendConfig, 30 + (int) (5 * 60 * Math.random()), 5 * 60, TimeUnit.SECONDS);
+		scheduledExecutorService.scheduleWithFixedDelay(RunnableExceptionLogger.wrap(this::sendConfig), 30 + (int) (5 * 60 * Math.random()), 5 * 60, TimeUnit.SECONDS);
 	}
 
 	public void switchProfile(ConfigProfile newProfile)
@@ -277,7 +275,18 @@ public class ConfigManager
 		// remove the remote profiles
 		try (ProfileManager.Lock lock = profileManager.lock())
 		{
-			lock.getProfiles().removeIf(p -> !p.isInternal() && p.isSync());
+			profile = updateProfile(lock, profile);
+			rsProfile = updateProfile(lock, rsProfile);
+
+			lock.getProfiles().removeIf(p -> p != profile && !p.isInternal() && p.isSync());
+
+			if (profile.isSync())
+			{
+				log.info("Active remote profile '{}' lost due to session close, converting to a local profile.", profile.getName());
+				profile.setSync(false);
+				profile.setRev(-1L);
+			}
+
 			lock.dirty();
 		}
 	}
@@ -330,33 +339,19 @@ public class ConfigManager
 
 	private void migrate()
 	{
-		boolean defaultSettings = RuneLite.DEFAULT_CONFIG_FILE.equals(configFile);
-		if (!defaultSettings)
-		{
-			log.warn("Use of --config is deprecated, use --profile instead.");
-		}
-
 		try (ProfileManager.Lock lock = profileManager.lock())
 		{
 			List<ConfigProfile> profiles = lock.getProfiles();
-			String configProfileName = profileNameFromFile(configFile);
-			// migrate if:
-			// profiles does not exist and config is default
-			// config is non-default and a profile with the config name doesn't exist
-			// this is to avoid importing default config if the default profile is removed or renamed.
-			if (defaultSettings ? profiles.isEmpty() : lock.findProfile(configProfileName) == null
-				&& configFile.exists())
+			File configFile = new File(RuneLite.RUNELITE_DIR, "settings.properties");
+			if (profiles.isEmpty() && configFile.exists())
 			{
-				String targetProfileName = defaultSettings ? "default" : configProfileName;
+				String targetProfileName = "default";
 
 				log.info("Performing migration of config from {} to profile '{}'", configFile.getName(), targetProfileName);
 
 				ConfigProfile targetProfile = lock.createProfile(targetProfileName);
-				if (defaultSettings)
-				{
-					profiles.forEach(p -> p.setActive(false));
-					targetProfile.setActive(true);
-				}
+				profiles.forEach(p -> p.setActive(false));
+				targetProfile.setActive(true);
 
 				ConfigProfile rsProfile = lock.findProfile(RSPROFILE_NAME);
 				if (rsProfile == null)
@@ -407,17 +402,6 @@ public class ConfigManager
 		log.info("Finished importing {} keys", keys);
 	}
 
-	private static String profileNameFromFile(File file)
-	{
-		String configProfileName = file.getName();
-		int idx = configProfileName.lastIndexOf('.');
-		if (idx > -1)
-		{
-			configProfileName = configProfileName.substring(0, idx);
-		}
-		return configProfileName;
-	}
-
 	public void load()
 	{
 		AccountSession session = sessionManager.getAccountSession();
@@ -431,6 +415,7 @@ public class ConfigManager
 				if (profiles != null)
 				{
 					remoteProfiles = profiles;
+					mergeRemoteProfiles(remoteProfiles);
 				}
 			}
 			catch (IOException ex)
@@ -438,8 +423,6 @@ public class ConfigManager
 				log.error("error loading remote profiles", ex);
 			}
 		}
-
-		mergeRemoteProfiles(remoteProfiles);
 
 		migrate();
 
@@ -459,6 +442,8 @@ public class ConfigManager
 					continue;
 				}
 
+				log.info("Profile '{}' (sync: {}, active: {})", p.getName(), p.isSync(), p.isActive());
+
 				// --profile
 				if (configProfileName != null)
 				{
@@ -467,17 +452,11 @@ public class ConfigManager
 						profile = p;
 					}
 				}
-				// --config
-				else if (!RuneLite.DEFAULT_CONFIG_FILE.equals(configFile))
-				{
-					// find a profile matching the name of the file
-					String configProfileName = profileNameFromFile(configFile);
-					if (p.getName().equals(configProfileName))
-					{
-						profile = p;
-					}
-				}
 				else if (p.isActive())
+				{
+					profile = p;
+				}
+				else if (profile == null)
 				{
 					profile = p;
 				}
@@ -489,12 +468,6 @@ public class ConfigManager
 			}
 			else
 			{
-				if (!RuneLite.DEFAULT_CONFIG_FILE.equals(configFile))
-				{
-					// --config not matching an existing profile. Refuse to make a new profile.
-					throw new RuntimeException("--config is deprecated and is supported for migrating existing configuration, but can't be used to create new profiles. Use --profile instead.");
-				}
-
 				profile = lock.createProfile(configProfileName != null ? configProfileName : "default");
 				if (configProfileName == null)
 				{
@@ -555,6 +528,31 @@ public class ConfigManager
 					log.info("Using remote profile {} as the active profile", profile.getName());
 					profile.setActive(true);
 				}
+			}
+
+			outer2:
+			for (ConfigProfile localProfile : lock.getProfiles())
+			{
+				for (Profile remoteProfile : remoteProfiles)
+				{
+					if (localProfile.getId() == remoteProfile.getId())
+					{
+						continue outer2;
+					}
+				}
+
+				log.debug("Found local profile {}", localProfile);
+
+				if (!localProfile.isSync() || localProfile.isInternal())
+				{
+					continue;
+				}
+
+				log.warn("Lost remote profile for '{}'", localProfile.getName());
+				// convert the profile to a non-synced profile
+				localProfile.setSync(false);
+				localProfile.setRev(-1);
+				lock.dirty();
 			}
 		}
 	}
@@ -1194,6 +1192,7 @@ public class ConfigManager
 
 			// We just recreate it, with the same id, so that the ConfigData stays valid
 			p = lock.createProfile(profile.getName(), profile.getId());
+			p.setActive(profile.isActive());
 		}
 		else if (profile.getRev() != p.getRev())
 		{

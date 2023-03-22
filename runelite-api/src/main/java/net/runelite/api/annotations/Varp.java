@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Adam <Adam@sigterm.info>
+ * Copyright (c) 2023, Adam <Adam@sigterm.info>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,59 +22,17 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.plugins.gpu;
+package net.runelite.api.annotations;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import net.runelite.api.VarPlayer;
+import org.intellij.lang.annotations.MagicConstant;
 
-class GpuFloatBuffer
+@MagicConstant(valuesFromClass = VarPlayer.class)
+@Documented
+@Retention(RetentionPolicy.SOURCE)
+public @interface Varp
 {
-	private FloatBuffer buffer = allocateDirect(65536);
-
-	void put(float s, float t, float p, float q)
-	{
-		buffer.put(s).put(t).put(p).put(q);
-	}
-
-	void flip()
-	{
-		buffer.flip();
-	}
-
-	void clear()
-	{
-		buffer.clear();
-	}
-
-	void ensureCapacity(int size)
-	{
-		int capacity = buffer.capacity();
-		final int position = buffer.position();
-		if ((capacity - position) < size)
-		{
-			do
-			{
-				capacity *= 2;
-			}
-			while ((capacity - position) < size);
-
-			FloatBuffer newB = allocateDirect(capacity);
-			buffer.flip();
-			newB.put(buffer);
-			buffer = newB;
-		}
-	}
-
-	FloatBuffer getBuffer()
-	{
-		return buffer;
-	}
-
-	static FloatBuffer allocateDirect(int size)
-	{
-		return ByteBuffer.allocateDirect(size * Float.BYTES)
-			.order(ByteOrder.nativeOrder())
-			.asFloatBuffer();
-	}
 }
