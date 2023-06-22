@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Abex
+ * Copyright (c) 2023 Abex
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,34 +22,37 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.externalplugins;
+package net.runelite.client.util;
 
-import java.lang.invoke.MethodHandles;
-import java.net.URL;
-import java.net.URLClassLoader;
-import lombok.Getter;
-import lombok.Setter;
-import net.runelite.client.util.ReflectUtil;
+import com.apple.eawt.FullScreenAdapter;
+import com.apple.eawt.FullScreenUtilities;
+import com.apple.eawt.event.FullScreenEvent;
+import java.awt.Frame;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-class ExternalPluginClassLoader extends URLClassLoader implements ReflectUtil.PrivateLookupableClassLoader
+@Slf4j
+@RequiredArgsConstructor
+class OSXFullScreenAdapter extends FullScreenAdapter
 {
-	@Getter
-	private final ExternalPluginManifest manifest;
+	private final Frame frame;
 
-	@Getter
-	@Setter
-	private MethodHandles.Lookup lookup;
-
-	ExternalPluginClassLoader(ExternalPluginManifest manifest, URL[] urls)
+	@Override
+	public void windowEnteredFullScreen(FullScreenEvent e)
 	{
-		super(urls, ExternalPluginClassLoader.class.getClassLoader());
-		this.manifest = manifest;
-		ReflectUtil.installLookupHelper(this);
+		log.debug("Window entered fullscreen mode--setting extended state to {}", Frame.MAXIMIZED_BOTH);
+		frame.setExtendedState(Frame.MAXIMIZED_BOTH);
 	}
 
 	@Override
-	public Class<?> defineClass0(String name, byte[] b, int off, int len) throws ClassFormatError
+	public void windowExitedFullScreen(FullScreenEvent e)
 	{
-		return super.defineClass(name, b, off, len);
+		log.debug("Window exited fullscreen mode--setting extended state to {}", Frame.NORMAL);
+		frame.setExtendedState(Frame.NORMAL);
+	}
+
+	public static void install(Frame frame)
+	{
+		FullScreenUtilities.addFullScreenListenerTo(frame, new OSXFullScreenAdapter(frame));
 	}
 }

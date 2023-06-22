@@ -180,6 +180,8 @@ public final class WidgetID
 	 */
 	public static final int TOA_RAID_GROUP_ID = 481;
 	public static final int ACHIEVEMENT_DIARY_SCROLL_GROUP_ID = 741;
+	public static final int PRAYER_GROUP_ID = 541;
+	public static final int QUICK_PRAYERS_GROUP_ID = 77;
 
 	static class WorldMap
 	{
@@ -699,7 +701,7 @@ public final class WidgetID
 
 	static class WorldSwitcher
 	{
-		static final int WORLD_LIST = 16;
+		static final int WORLD_LIST = 18;
 	}
 
 	static class Minigames
@@ -768,9 +770,9 @@ public final class WidgetID
 	static class Music
 	{
 		static final int CONTAINER = 0;
-		static final int SCROLL_CONTAINER = 3;
-		static final int LIST = 5;
-		static final int SCROLLBAR = 6;
+		static final int SCROLL_CONTAINER = 4;
+		static final int LIST = 6;
+		static final int SCROLLBAR = 7;
 	}
 
 	static class Barrows_Puzzle
@@ -800,10 +802,10 @@ public final class WidgetID
 
 	static class SettingsSide
 	{
-		static final int CAMERA_ZOOM_SLIDER_TRACK = 100;
-		static final int MUSIC_SLIDER = 29;
-		static final int SOUND_EFFECT_SLIDER = 43;
-		static final int AREA_SOUND_SLIDER = 57;
+		static final int CAMERA_ZOOM_SLIDER_TRACK = 57;
+		static final int MUSIC_SLIDER = 92;
+		static final int SOUND_EFFECT_SLIDER = 106;
+		static final int AREA_SOUND_SLIDER = 120;
 	}
 
 	static class Settings
