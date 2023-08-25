@@ -27,6 +27,8 @@ package net.runelite.client.plugins.logouttimer;
 import com.google.inject.Provides;
 import java.time.Duration;
 import javax.inject.Inject;
+
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.Constants;
 import net.runelite.client.config.ConfigManager;
@@ -35,6 +37,7 @@ import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 
+@Slf4j
 @PluginDescriptor(
 	name = "Logout Timer",
 	description = "Extends the default 5 minute logout timer",
@@ -71,6 +74,7 @@ public class LogoutTimerPlugin extends Plugin
 	{
 		if (configChanged.getGroup().equals(LogoutTimerConfig.GROUP))
 		{
+			log.info("Idle timeout changed to {}", config.getIdleTimeout());
 			client.setIdleTimeout((int) Duration.ofMinutes(config.getIdleTimeout()).toMillis() / Constants.CLIENT_TICK_LENGTH);
 		}
 	}
