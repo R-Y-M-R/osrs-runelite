@@ -391,11 +391,11 @@ public class RuneLite
 
 		clientUI.show();
 
-		if (telemetryClient != null)
-		{
-			telemetryClient.submitTelemetry();
-			telemetryClient.submitVmErrors(LOGS_DIR);
-		}
+//		if (telemetryClient != null)
+//		{
+//			telemetryClient.submitTelemetry();
+//			telemetryClient.submitVmErrors(LOGS_DIR);
+//		}
 
 		ReflectUtil.queueInjectorAnnotationCacheInvalidation(injector);
 		ReflectUtil.invalidateAnnotationCaches();
