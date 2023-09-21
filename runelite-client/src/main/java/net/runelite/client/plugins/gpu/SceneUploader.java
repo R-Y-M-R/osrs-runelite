@@ -69,11 +69,11 @@ class SceneUploader
 
 		for (int z = 0; z < Constants.MAX_Z; ++z)
 		{
-			for (int x = 0; x < Constants.SCENE_SIZE; ++x)
+			for (int x = 0; x < Constants.EXTENDED_SCENE_SIZE; ++x)
 			{
-				for (int y = 0; y < Constants.SCENE_SIZE; ++y)
+				for (int y = 0; y < Constants.EXTENDED_SCENE_SIZE; ++y)
 				{
-					Tile tile = scene.getTiles()[z][x][y];
+					Tile tile = scene.getExtendedTiles()[z][x][y];
 					if (tile != null)
 					{
 						upload(scene, tile, vertexbuffer, uvBuffer);
@@ -210,6 +210,8 @@ class SceneUploader
 		final int localX = offsetX;
 		final int localY = offsetY;
 
+		tileX += GpuPlugin.SCENE_OFFSET;
+		tileY += GpuPlugin.SCENE_OFFSET;
 		int swHeight = tileHeights[tileZ][tileX][tileY];
 		int seHeight = tileHeights[tileZ][tileX + 1][tileY];
 		int neHeight = tileHeights[tileZ][tileX + 1][tileY + 1];
