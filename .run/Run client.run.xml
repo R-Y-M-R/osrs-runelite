@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run client" type="Application" factoryName="Application" singleton="false">
+    <option name="MAIN_CLASS_NAME" value="net.runelite.client.RuneLite" />
+    <module name="client" />
+    <option name="PROGRAM_PARAMETERS" value="--developer-mode --debug" />
+    <option name="VM_PARAMETERS" value="-ea --add-modules jdk.jsobject --add-exports=javafx.web/com.sun.javafx.webkit=ALL-UNNAMED" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
