@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="install -Dskiptests" type="MavenRunConfiguration" factoryName="Maven">
+  <configuration default="false" name="Still not working fix" type="MavenRunConfiguration" factoryName="Maven">
     <MavenSettings>
       <option name="myGeneralSettings" />
       <option name="myRunnerSettings" />
