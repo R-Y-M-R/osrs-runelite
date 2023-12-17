@@ -1,15 +1,15 @@
 /*
- * Copyright (c) 2018, Ron Young <https://github.com/raiyni>
+ * Copyright (c) 2023, Adam <Adam@sigterm.info>
  * All rights reserved.
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
- *     list of conditions and the following disclaimer.
+ *    list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
- *     this list of conditions and the following disclaimer in the documentation
- *     and/or other materials provided with the distribution.
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -22,24 +22,17 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package net.runelite.api.annotations;
 
-package net.runelite.client.plugins.banktags.tabs;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import net.runelite.api.widgets.ComponentID;
+import org.intellij.lang.annotations.MagicConstant;
 
-class MenuIndexes
+@MagicConstant(valuesFromClass = ComponentID.class)
+@Documented
+@Retention(RetentionPolicy.SOURCE)
+public @interface Component
 {
-	static class NewTab
-	{
-		static final int NEW_TAB = 2;
-		static final int IMPORT_TAB = 3;
-		static final int OPEN_TAB_MENU = 4;
-	}
-
-	static class Tab
-	{
-		static final int OPEN_TAG = 2;
-		static final int CHANGE_ICON = 3;
-		static final int DELETE_TAB = 4;
-		static final int EXPORT_TAB = 5;
-		static final int RENAME_TAB = 6;
-	}
 }
