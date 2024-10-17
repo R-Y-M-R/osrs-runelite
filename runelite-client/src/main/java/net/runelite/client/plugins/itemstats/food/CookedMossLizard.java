@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Seth <Sethtroll3@gmail.com>
+ * Copyright (c) 2024 Macweese
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,53 +22,20 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.plugins.motherlode;
+package net.runelite.client.plugins.itemstats.food;
 
-import java.time.Duration;
-import java.time.Instant;
-import javax.inject.Singleton;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
+import net.runelite.api.Client;
+import net.runelite.client.plugins.itemstats.FoodBase;
+import static net.runelite.client.plugins.itemstats.stats.Stats.COOKING;
+import static net.runelite.client.plugins.itemstats.stats.Stats.HUNTER;
 
-@Getter
-@Slf4j
-@Singleton
-class MotherlodeSession
+public class CookedMossLizard extends FoodBase
 {
-	private static final long HOUR = Duration.ofHours(1).toMillis();
-
-	private int perHour;
-
-	private Instant lastPayDirtMined;
-	private int totalMined;
-
-	private Instant recentPayDirtMined;
-	private int recentMined;
-
-	public void incrementPayDirtMined()
+	@Override
+	public int heals(Client client)
 	{
-		Instant now = Instant.now();
-
-		lastPayDirtMined = now;
-		++totalMined;
-
-		if (recentMined == 0)
-		{
-			recentPayDirtMined = now;
-		}
-		++recentMined;
-
-		Duration timeSinceStart = Duration.between(recentPayDirtMined, now);
-		if (!timeSinceStart.isZero())
-		{
-			perHour = (int) ((double) recentMined * (double) HOUR / (double) timeSinceStart.toMillis());
-		}
+		int cooking = COOKING.getValue(client) / 3;
+		int hunter = HUNTER.getValue(client) / 2;
+		return Math.min(cooking, hunter);
 	}
-
-	public void resetRecent()
-	{
-		recentPayDirtMined = null;
-		recentMined = 0;
-	}
-
 }
